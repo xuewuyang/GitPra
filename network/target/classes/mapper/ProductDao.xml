@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.netease.dao.ProductDao">
+	<!-- 目的：为DAO接口方法提供sql语句配置 -->
+	<!-- 查询用户和密码进行登录 -->
+	<select id="getProducts" resultType="Product">
+		select * from product
+	</select>
+	
+	<select id="getProductById" resultType="Product" parameterType="Integer">
+	    select * from product where id = #{id}
+	</select>
+	
+	<select id="getSoldProducts" resultType="Product">
+	    select * from product where state = 1
+	</select>
+	
+	<select id="getNotBuyProducts" resultType="Product">
+	    select * from product where state = 0
+	</select>
+	
+	<delete id="deleteProductById" parameterType="Integer">
+	    delete from product where id = #{id}
+	</delete>
+	
+	<update id="updateProduct" parameterType="java.util.List">
+	    <foreach collection="list" item="item" index="index" separator=";">
+	       update product set state = 1,sold_count = #{item.count} where Id = #{item.id}
+	    </foreach>
+	</update>
+	
+	<insert id="publicProduct" parameterType="PublicProductVo">
+	    <selectKey keyProperty="cnt" resultType="int" order="BEFORE">
+	       select count(*) from product where id=#{id}
+	    </selectKey>
+	    <if test="cnt>0">
+	       update product set product_name=#{productName},product_summary=#{productSummary},
+	       picture_address=#{pictureAddress},product_context=#{productContext},price=#{price} 
+	       where id=#{id}
+	    </if>
+	    <if test="cnt==0">
+	       insert into product(product_name,product_summary,picture_address,product_context,price) 
+	       values (#{productName},#{productSummary},#{pictureAddress},#{productContext},#{price})
+	    </if>
+	</insert>
+</mapper>
