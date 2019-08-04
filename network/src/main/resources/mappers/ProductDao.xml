@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.netease.network.mapper.ProductDao">
+    <resultMap type="com.netease.network.entity.Product" id="product">
+        <result property="id" column="id"/>
+        <result property="productName" column="product_name"/>
+        <result property="productSummary" column="product_summary"/>
+        <result property="pictureAddress" column="picture_address"/>
+        <result property="productContext" column="product_context"/>
+        <result property="price" column="price"/>
+        <result property="state" column="state"/>
+        <result property="soldCount" column="sold_count"/>
+        <result property="buyTime" column="buy_time"/>
+    </resultMap>
+	<select id="findAll" resultMap="product">
+		select * from product
+	</select>
+	
+	<select id="findProductById" resultType="com.netease.network.entity.Product" parameterType="Integer">
+	    select * from product where id = #{id}
+	</select>
+	
+	<select id="findSoldProducts" resultType="com.netease.network.entity.Product">
+	    select * from product where state = 1
+	</select>
+	
+	<select id="findNotBuyProducts" resultType="com.netease.network.entity.Product">
+	    select * from product where state = 0
+	</select>
+
+	<select id="searchProducts" resultType="com.netease.network.entity.Product" parameterType="String">
+		select * from product where product_name like concat('%',#{searchInfo},'%') or product_summary like concat('%',#{searchInfo},'%')
+	</select>
+
+	<delete id="deleteProductById" parameterType="Integer">
+	    delete from product where id = #{id}
+	</delete>
+
+	<update id="updateProduct" parameterType="java.util.List">
+		<foreach collection="list" item="item" index="index" open="" close="" separator=";">
+			update product set state = 1,sold_count = #{item.count},buy_time=#{item.buyTime} where id = #{item.id}
+		</foreach>
+	</update>
+	
+	<insert id="publicProduct" parameterType="com.netease.network.dto.PublicProductDo">
+	    <selectKey keyProperty="cnt" resultType="int" order="BEFORE">
+	       select count(*) from product where id=#{id}
+	    </selectKey>
+	    <if test="cnt>0">
+	       update product set product_name=#{productName},product_summary=#{productSummary},
+	       picture_address=#{pictureAddress},product_context=#{productContext},price=#{price},buy_time=#{buyTime}
+	       where id=#{id}
+	    </if>
+	    <if test="cnt==0">
+	       insert into product(product_name,product_summary,picture_address,product_context,price,buy_time)
+	       values (#{productName},#{productSummary},#{pictureAddress},#{productContext},#{price},#{buyTime})
+	    </if>
+	</insert>
+</mapper>
